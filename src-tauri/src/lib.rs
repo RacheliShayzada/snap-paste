@@ -1,6 +1,51 @@
-use enigo::{Direction, Enigo, Key, Keyboard, Settings};
+use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+
+/// Simulates a Ctrl+V keystroke using Win32 SendInput with virtual key codes
+/// (VK_CONTROL + VK_V). This is the only method applications reliably recognise
+/// as a paste shortcut — enigo's Key::Unicode uses KEYEVENTF_UNICODE which
+/// sends a raw Unicode character and is NOT treated as Ctrl+V by most apps.
+#[cfg(target_os = "windows")]
+fn send_ctrl_v() -> u32 {
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+        SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, VK_CONTROL, VK_V,
+    };
+
+    let make = |vk: u16, flags: u32| -> INPUT {
+        INPUT {
+            r#type: INPUT_KEYBOARD,
+            Anonymous: INPUT_0 {
+                ki: KEYBDINPUT {
+                    wVk: vk,
+                    wScan: 0,
+                    dwFlags: flags,
+                    time: 0,
+                    dwExtraInfo: 0,
+                },
+            },
+        }
+    };
+
+    let inputs = [
+        make(VK_CONTROL, 0),           // Ctrl down
+        make(VK_V, 0),                 // V down
+        make(VK_V, KEYEVENTF_KEYUP),   // V up
+        make(VK_CONTROL, KEYEVENTF_KEYUP), // Ctrl up
+    ];
+
+    unsafe {
+        SendInput(
+            inputs.len() as u32,
+            inputs.as_ptr(),
+            std::mem::size_of::<INPUT>() as i32,
+        )
+    }
+}
+
+/// HWND of the window that was in the foreground before snap-paste was shown.
+/// We restore it explicitly after hiding so that Ctrl+V lands in the right app.
+struct PrevForeground(Mutex<isize>);
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -15,6 +60,9 @@ fn greet(name: &str) -> String {
 async fn hide_and_paste(app: AppHandle, content: String) -> Result<(), String> {
     println!("[hide_and_paste] called with content: {:?}", content);
 
+    // Read the HWND saved when the shortcut opened the window.
+    let prev_hwnd = *app.state::<PrevForeground>().0.lock().unwrap();
+
     // Hide the window first so focus leaves our app.
     if let Some(window) = app.get_webview_window("main") {
         window.hide().map_err(|e| e.to_string())?;
@@ -23,11 +71,11 @@ async fn hide_and_paste(app: AppHandle, content: String) -> Result<(), String> {
         println!("[hide_and_paste] ERROR: could not find window 'main'");
     }
 
-    // Offload all blocking work (clipboard + sleep + keystroke) to a
-    // dedicated thread. Enigo and arboard are not Send across await points.
+    // Offload all blocking work into spawn_blocking — SetForegroundWindow
+    // and SendInput must run on the same thread for reliable focus transfer.
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
-        // Write to clipboard from Rust — more reliable than the browser API
-        // inside WebView2 on Windows.
+        // Write clipboard first, while no other app has had a chance to
+        // interfere with it.
         let mut clipboard = arboard::Clipboard::new().map_err(|e| {
             let msg = format!("[hide_and_paste] arboard init error: {e}");
             println!("{msg}");
@@ -40,27 +88,37 @@ async fn hide_and_paste(app: AppHandle, content: String) -> Result<(), String> {
         })?;
         println!("[hide_and_paste] clipboard written OK");
 
-        // Give the OS enough time to transfer focus to the target window.
-        std::thread::sleep(std::time::Duration::from_millis(300));
-        println!("[hide_and_paste] sleep done, firing Ctrl+V");
+        // Give the OS a moment to finish processing the SW_HIDE.
+        std::thread::sleep(std::time::Duration::from_millis(100));
 
-        let mut enigo = Enigo::new(&Settings::default()).map_err(|e| {
-            let msg = format!("[hide_and_paste] enigo init error: {e}");
-            println!("{msg}");
-            msg
-        })?;
+        // Restore foreground RIGHT before SendInput — minimises the window
+        // during which another event could steal focus again.
+        #[cfg(target_os = "windows")]
+        {
+            use windows_sys::Win32::UI::WindowsAndMessaging::{
+                GetForegroundWindow, SetForegroundWindow,
+            };
+            if prev_hwnd != 0 {
+                let ok = unsafe { SetForegroundWindow(prev_hwnd) };
+                let actual = unsafe { GetForegroundWindow() };
+                println!(
+                    "[hide_and_paste] SetForegroundWindow({prev_hwnd}) -> {ok}, \
+                     actual foreground now: {actual}"
+                );
+            }
+        }
 
-        enigo
-            .key(Key::Control, Direction::Press)
-            .map_err(|e| e.to_string())?;
-        enigo
-            .key(Key::Unicode('v'), Direction::Click)
-            .map_err(|e| e.to_string())?;
-        enigo
-            .key(Key::Control, Direction::Release)
-            .map_err(|e| e.to_string())?;
+        // Brief settle time for the focus transition to complete.
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        println!("[hide_and_paste] firing Ctrl+V");
 
-        println!("[hide_and_paste] Ctrl+V sent");
+        #[cfg(target_os = "windows")]
+        {
+            let sent = send_ctrl_v();
+            println!("[hide_and_paste] SendInput sent {sent} events (expected 4)");
+        }
+
+        println!("[hide_and_paste] done");
         Ok(())
     })
     .await
@@ -70,11 +128,22 @@ async fn hide_and_paste(app: AppHandle, content: String) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(PrevForeground(Mutex::new(0isize)))
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
                     if event.state() == ShortcutState::Pressed {
+                        // Save the current foreground window BEFORE snap-paste
+                        // steals focus — this is the window the user wants to paste into.
+                        #[cfg(target_os = "windows")]
+                        {
+                            use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+                            let hwnd = unsafe { GetForegroundWindow() };
+                            *app.state::<PrevForeground>().0.lock().unwrap() = hwnd;
+                            println!("[shortcut] saved prev foreground hwnd: {hwnd}");
+                        }
+
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
