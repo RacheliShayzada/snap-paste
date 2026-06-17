@@ -23,11 +23,65 @@
 
 .container {
   margin: 0;
-  padding-top: 10vh;
+  padding: 12px 8px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  text-align: left;
+}
+
+.app-title {
+  font-size: 1rem;
+  font-weight: 600;
   text-align: center;
+  margin: 0 0 10px;
+  letter-spacing: 0.05em;
+  color: #333;
+}
+
+.snippet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: calc(100vh - 52px);
+}
+
+.snippet-item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  gap: 2px;
+}
+
+.snippet-item:hover {
+  background: #f0f4ff;
+  border-color: #396cd8;
+}
+
+.snippet-item:active {
+  background: #dce6ff;
+}
+
+.snippet-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.snippet-preview {
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logo {
