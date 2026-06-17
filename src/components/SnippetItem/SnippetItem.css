@@ -1,0 +1,39 @@
+.snippet-item {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #17171d;
+  border: 1px solid #2c2c3a;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  gap: 3px;
+}
+
+.snippet-item:hover {
+  background: #1c1529;
+  border-color: #6d3fc7;
+  box-shadow:
+    inset 3px 0 0 #a78bfa,
+    0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.snippet-item:active {
+  background: #271a40;
+  border-color: #8b5cf6;
+  box-shadow: inset 3px 0 0 #c4b5fd;
+}
+
+.snippet-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f0f0f5;
+}
+
+.snippet-preview {
+  font-size: 0.72rem;
+  color: #5e5e7a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
