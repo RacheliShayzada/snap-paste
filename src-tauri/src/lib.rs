@@ -130,6 +130,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(PrevForeground(Mutex::new(0isize)))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
