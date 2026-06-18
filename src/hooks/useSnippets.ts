@@ -42,5 +42,29 @@ export function useSnippets() {
     }
   };
 
-  return { snippets, addSnippet };
+  const editSnippet = async (
+    id: number,
+    title: string,
+    content: string
+  ): Promise<void> => {
+    const updated = snippets.map((s) =>
+      s.id === id ? { ...s, title, content } : s
+    );
+    setSnippets(updated);
+    if (store) {
+      await store.set(STORE_KEY, updated);
+      await store.save();
+    }
+  };
+
+  const deleteSnippet = async (id: number): Promise<void> => {
+    const updated = snippets.filter((s) => s.id !== id);
+    setSnippets(updated);
+    if (store) {
+      await store.set(STORE_KEY, updated);
+      await store.save();
+    }
+  };
+
+  return { snippets, addSnippet, editSnippet, deleteSnippet };
 }

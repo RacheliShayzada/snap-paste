@@ -1,13 +1,14 @@
 .snippet-item {
   display: flex;
-  flex-direction: column;
-  padding: 9px 12px;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 9px 8px 9px 12px;
   border-radius: 7px;
   background: #17171d;
   border: 1px solid #2c2c3a;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-  gap: 3px;
+  gap: 4px;
 }
 
 .snippet-item:hover {
@@ -24,6 +25,14 @@
   box-shadow: inset 3px 0 0 #c4b5fd;
 }
 
+.snippet-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 3px;
+}
+
 .snippet-title {
   font-size: 0.85rem;
   font-weight: 600;
@@ -36,4 +45,82 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Kebab menu ─────────────────────────────────────────── */
+
+.snippet-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.snippet-menu-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #3e3e52;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.snippet-item:hover .snippet-menu-btn {
+  color: #6b6b85;
+}
+
+.snippet-menu-btn:hover {
+  color: #a78bfa !important;
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.snippet-dropdown {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  background: #1e1e2a;
+  border: 1px solid #2e2e42;
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 110px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.snippet-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: #b0b0c8;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+  width: 100%;
+}
+
+.snippet-dropdown-item:hover {
+  background: rgba(167, 139, 250, 0.1);
+  color: #e8e8f2;
+}
+
+.snippet-dropdown-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
 }
