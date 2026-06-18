@@ -1,6 +1,5 @@
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 /// Simulates a Ctrl+V keystroke using Win32 SendInput with virtual key codes
 /// (VK_CONTROL + VK_V). This is the only method applications reliably recognise
@@ -46,6 +45,27 @@ fn send_ctrl_v() -> u32 {
 /// HWND of the window that was in the foreground before snap-paste was shown.
 /// We restore it explicitly after hiding so that Ctrl+V lands in the right app.
 struct PrevForeground(Mutex<isize>);
+
+/// Called from JS when the global shortcut fires.
+/// Saves the currently active window (the one to paste into), then shows
+/// and focuses the snap-paste window.
+#[tauri::command]
+async fn show_window(app: AppHandle) -> Result<(), String> {
+    // Capture the foreground HWND before our window steals focus.
+    #[cfg(target_os = "windows")]
+    {
+        use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+        let hwnd = unsafe { GetForegroundWindow() };
+        *app.state::<PrevForeground>().0.lock().unwrap() = hwnd;
+        println!("[show_window] saved prev foreground hwnd: {hwnd}");
+    }
+
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -131,37 +151,14 @@ pub fn run() {
         .manage(PrevForeground(Mutex::new(0isize)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(
-            tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(|app, _shortcut, event| {
-                    if event.state() == ShortcutState::Pressed {
-                        // Save the current foreground window BEFORE snap-paste
-                        // steals focus — this is the window the user wants to paste into.
-                        #[cfg(target_os = "windows")]
-                        {
-                            use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
-                            let hwnd = unsafe { GetForegroundWindow() };
-                            *app.state::<PrevForeground>().0.lock().unwrap() = hwnd;
-                            println!("[shortcut] saved prev foreground hwnd: {hwnd}");
-                        }
-
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
-                })
-                .build(),
-        )
-        .setup(|app| {
-            // Ctrl+Shift+Space — avoids the Ctrl+Shift+V paste conflict
-            // that terminals and editors handle themselves.
-            let shortcut =
-                Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space);
-            app.global_shortcut().register(shortcut)?;
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![greet, hide_and_paste])
+        // Global shortcut plugin — shortcuts are registered from JS via
+        // @tauri-apps/plugin-global-shortcut; this just initialises the plugin.
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
+        .invoke_handler(tauri::generate_handler![greet, hide_and_paste, show_window])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

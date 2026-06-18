@@ -23,5 +23,5 @@
 }
 
 .snippet-list::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: var(--accent-dim);
 }

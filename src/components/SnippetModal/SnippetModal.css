@@ -21,7 +21,7 @@
 .modal-title {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #a78bfa;
+  color: var(--accent);
   margin: 0 0 14px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -60,8 +60,8 @@
 }
 
 .modal-input:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
 .modal-textarea {
@@ -99,12 +99,12 @@
 }
 
 .modal-btn-save {
-  background: #7c3aed;
+  background: var(--accent-dim);
   color: #fff;
 }
 
 .modal-btn-save:hover:not(:disabled) {
-  background: #6d28d9;
+  background: var(--accent-hover-border);
 }
 
 .modal-btn-save:disabled {

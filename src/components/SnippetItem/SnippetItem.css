@@ -12,17 +12,17 @@
 }
 
 .snippet-item:hover {
-  background: #1c1529;
-  border-color: #6d3fc7;
+  background: var(--accent-hover-bg);
+  border-color: var(--accent-hover-border);
   box-shadow:
-    inset 3px 0 0 #a78bfa,
+    inset 3px 0 0 var(--accent),
     0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .snippet-item:active {
-  background: #271a40;
-  border-color: #8b5cf6;
-  box-shadow: inset 3px 0 0 #c4b5fd;
+  background: var(--accent-active-bg);
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .snippet-body {
@@ -77,8 +77,8 @@
 }
 
 .snippet-menu-btn:hover {
-  color: #a78bfa !important;
-  background: rgba(167, 139, 250, 0.08);
+  color: var(--accent) !important;
+  background: var(--accent-subtle);
 }
 
 .snippet-dropdown {
@@ -116,7 +116,7 @@
 }
 
 .snippet-dropdown-item:hover {
-  background: rgba(167, 139, 250, 0.1);
+  background: var(--accent-subtle-mid);
   color: #e8e8f2;
 }
 
