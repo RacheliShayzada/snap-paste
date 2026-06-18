@@ -1,5 +1,5 @@
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, WindowEvent};
 
 /// Simulates a Ctrl+V keystroke using Win32 SendInput with virtual key codes
 /// (VK_CONTROL + VK_V). This is the only method applications reliably recognise
@@ -159,6 +159,15 @@ pub fn run() {
             Some(vec![]),
         ))
         .invoke_handler(tauri::generate_handler![greet, hide_and_paste, show_window])
+        // Intercept the X button: hide instead of destroying the process.
+        // The app stays alive in the background and can be re-summoned via
+        // the global hotkey.
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
