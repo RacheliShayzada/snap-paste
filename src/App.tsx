@@ -1,20 +1,34 @@
 import { useState } from "react";
 import { SnippetList } from "./components/SnippetList/SnippetList";
-import { AddSnippetModal } from "./components/AddSnippetModal/AddSnippetModal";
+import { SnippetModal } from "./components/SnippetModal/SnippetModal";
 import { handleItemClick } from "./utils/paste";
 import { useSnippets } from "./hooks/useSnippets";
+import type { SnippetItem } from "./types/snippet";
 import "./App.css";
 
+type ModalState =
+  | null
+  | { mode: "add" }
+  | { mode: "edit"; item: SnippetItem };
+
 function App() {
-  const { snippets, addSnippet } = useSnippets();
-  const [modalOpen, setModalOpen] = useState(false);
+  const { snippets, addSnippet, editSnippet, deleteSnippet } = useSnippets();
+  const [modal, setModal] = useState<ModalState>(null);
+
+  const handleSave = async (title: string, content: string) => {
+    if (modal?.mode === "add") {
+      await addSnippet(title, content);
+    } else if (modal?.mode === "edit") {
+      await editSnippet(modal.item.id, title, content);
+    }
+  };
 
   return (
     <main className="container">
       <header className="app-header">
         <button
           className="add-btn"
-          onClick={() => setModalOpen(true)}
+          onClick={() => setModal({ mode: "add" })}
           title="Add snippet"
         >
           +
@@ -22,12 +36,20 @@ function App() {
         <h1 className="app-title">Snap Paste</h1>
       </header>
 
-      <SnippetList items={snippets} onItemClick={handleItemClick} />
+      <SnippetList
+        items={snippets}
+        onItemClick={handleItemClick}
+        onEdit={(item) => setModal({ mode: "edit", item })}
+        onDelete={deleteSnippet}
+      />
 
-      {modalOpen && (
-        <AddSnippetModal
-          onAdd={addSnippet}
-          onClose={() => setModalOpen(false)}
+      {modal && (
+        <SnippetModal
+          mode={modal.mode}
+          initialTitle={modal.mode === "edit" ? modal.item.title : ""}
+          initialContent={modal.mode === "edit" ? modal.item.content : ""}
+          onSave={handleSave}
+          onClose={() => setModal(null)}
         />
       )}
     </main>
