@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Store } from '@tauri-apps/plugin-store';
-import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { invoke } from '@tauri-apps/api/core';
 import { THEMES, DEFAULT_SETTINGS } from '../types/settings';
@@ -40,11 +39,12 @@ export function useSettings() {
       setSettings(resolved);
       applyTheme(resolved.accentColor);
 
-      // Register the global shortcut (JS-managed from here on)
+      // Apply the saved shortcut in Rust (default registered in setup is Ctrl+Shift+Space).
+      // This is a no-op if the saved value matches the default.
       try {
-        await register(resolved.hotkey, () => invoke('show_window'));
+        await invoke('set_hotkey', { shortcut: resolved.hotkey });
       } catch (err) {
-        console.warn('[useSettings] failed to register shortcut:', err);
+        console.warn('[useSettings] failed to apply saved shortcut:', err);
       }
     })();
 
@@ -68,14 +68,9 @@ export function useSettings() {
 
   const setHotkey = async (shortcut: string) => {
     try {
-      await unregister(settings.hotkey);
-    } catch {
-      // ignore — shortcut may not be registered yet
-    }
-    try {
-      await register(shortcut, () => invoke('show_window'));
+      await invoke('set_hotkey', { shortcut });
     } catch (err) {
-      console.warn('[useSettings] failed to register new shortcut:', err);
+      console.warn('[useSettings] failed to set shortcut:', err);
     }
     const updated = { ...settings, hotkey: shortcut };
     setSettings(updated);

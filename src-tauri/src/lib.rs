@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager, WindowEvent};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 /// Simulates a Ctrl+V keystroke using Win32 SendInput with virtual key codes
 /// (VK_CONTROL + VK_V). This is the only method applications reliably recognise
@@ -145,20 +146,65 @@ async fn hide_and_paste(app: AppHandle, content: String) -> Result<(), String> {
     .map_err(|e| e.to_string())?
 }
 
+/// Called from JS (Settings view) to change the active global shortcut.
+/// Unregisters the current shortcut and registers the new one.
+/// The `with_handler` registered in `run()` fires for whatever shortcut is
+/// currently registered, so HWND capture always happens in Rust with no IPC delay.
+#[tauri::command]
+fn set_hotkey(app: AppHandle, shortcut: String) -> Result<(), String> {
+    let parsed = match shortcut.as_str() {
+        "Ctrl+Shift+Space" => Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space),
+        "Alt+Shift+V"      => Shortcut::new(Some(Modifiers::ALT    | Modifiers::SHIFT),  Code::KeyV),
+        "Ctrl+Shift+X"     => Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyX),
+        "Ctrl+Alt+P"       => Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT),   Code::KeyP),
+        "Alt+V"            => Shortcut::new(Some(Modifiers::ALT), Code::KeyV),
+        other              => return Err(format!("Unknown shortcut: {other}")),
+    };
+
+    app.global_shortcut().unregister_all().map_err(|e| e.to_string())?;
+    app.global_shortcut().register(parsed).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(PrevForeground(Mutex::new(0isize)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        // Global shortcut plugin — shortcuts are registered from JS via
-        // @tauri-apps/plugin-global-shortcut; this just initialises the plugin.
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        // Shortcut handler runs directly in Rust — GetForegroundWindow() is
+        // called at the instant the key is pressed, before any IPC round-trip
+        // could cause our WebView to steal the foreground.
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state() == ShortcutState::Pressed {
+                        #[cfg(target_os = "windows")]
+                        {
+                            use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+                            let hwnd = unsafe { GetForegroundWindow() };
+                            *app.state::<PrevForeground>().0.lock().unwrap() = hwnd;
+                            println!("[shortcut] saved prev foreground hwnd: {hwnd}");
+                        }
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                })
+                .build(),
+        )
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
-        .invoke_handler(tauri::generate_handler![greet, hide_and_paste, show_window])
+        // Register the default shortcut; JS calls set_hotkey to change it.
+        .setup(|app| {
+            let sc = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space);
+            app.global_shortcut().register(sc)?;
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![greet, hide_and_paste, show_window, set_hotkey])
         // Intercept the X button: hide instead of destroying the process.
         // The app stays alive in the background and can be re-summoned via
         // the global hotkey.
