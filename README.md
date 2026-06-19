@@ -77,7 +77,7 @@ So I built **snap-paste**: a minimal, always-available desktop launcher that liv
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/snap-paste.git
+git clone https://github.com/RacheliShayzada/snap-paste.git
 cd snap-paste
 
 # Install JS dependencies
