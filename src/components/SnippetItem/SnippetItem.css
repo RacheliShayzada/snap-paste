@@ -11,7 +11,8 @@
   gap: 4px;
 }
 
-.snippet-item:hover {
+.snippet-item:hover,
+.snippet-item--active {
   background: var(--accent-hover-bg);
   border-color: var(--accent-hover-border);
   box-shadow:
