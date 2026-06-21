@@ -97,6 +97,12 @@
   gap: 2px;
 }
 
+/* First item has no room above the list — open the dropdown downward instead */
+.snippet-item:first-child .snippet-dropdown {
+  bottom: auto;
+  top: calc(100% + 4px);
+}
+
 .snippet-dropdown-item {
   display: flex;
   align-items: center;

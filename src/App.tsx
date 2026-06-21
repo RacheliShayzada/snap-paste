@@ -115,6 +115,8 @@ function App() {
 
           {filtered.length === 0 && searchQuery.trim() ? (
             <p className="search-empty">No snippets match "{searchQuery}"</p>
+          ) : filtered.length === 0 ? (
+            <p className="search-empty">No snippets yet - press <strong>+</strong> to add one.</p>
           ) : (
             <SnippetList
               items={filtered}
