@@ -2,6 +2,8 @@
 
 # ⚡ snap-paste
 
+<p align="center"><img src="./assets/snap-paste-logo.svg" width="128" height="128" alt="Snap-Paste Logo"></p>
+
 **A blazing-fast clipboard snippet launcher for Windows — built for developers who paste the same things every single day.**
 
 [![Tauri](https://img.shields.io/badge/Tauri-v2-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app)
@@ -12,6 +14,7 @@
 
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-a78bfa?style=flat-square)
+![Version](https://img.shields.io/badge/Version-0.2.0-22c55e?style=flat-square)
 
 </div>
 
@@ -36,9 +39,12 @@ So I built **snap-paste**: a minimal, always-available desktop launcher that liv
 |---|---|
 | ⚡ **Auto-Paste** | Click a snippet → window hides → text is pasted at your cursor. No Ctrl+V needed. |
 | ✏️ **Full CRUD** | Add, edit, and delete your snippets with a clean modal UI. |
+| ↕️ **Drag & Drop** | Reorder snippets instantly by dragging the grip handle on each row. |
 | 🔍 **Smart Search** | Real-time filtering by title or content with a toggleable search bar. |
 | ⌨️ **Global Hotkey** | Summon snap-paste from **anywhere** with a configurable system-wide shortcut. |
 | 🎨 **Theme Accents** | Choose from 4 accent colors: Lavender, Teal, Coral, and Slate. |
+| ☀️ **Light Mode** | Toggle between Light and Dark themes — persisted across restarts. |
+| 🔔 **Live Updates** | Automatically checks GitHub releases on launch and notifies you when a new version is out. |
 | 🚀 **Launch on Startup** | Optionally start with Windows so it's always ready. |
 | 🔒 **Background Running** | Pressing X hides the window — the process stays alive, ready for your next hotkey. |
 | 💾 **Persistent Storage** | All snippets and settings survive app restarts via native app-data storage. |
@@ -52,13 +58,15 @@ So I built **snap-paste**: a minimal, always-available desktop launcher that liv
 | Layer | Technology | Purpose |
 |---|---|---|
 | **Frontend** | React 18 + TypeScript | UI, state management, snippet interactions |
-| **Styling** | Tailwind CSS + CSS Variables | Dark theme with dynamic accent color theming |
+| **Styling** | CSS Custom Properties | Dark/light theming with runtime accent color switching |
 | **Backend** | Rust (Tauri v2) | Window management, global shortcuts, native paste |
 | **Clipboard** | `arboard` (Rust) | Reliable cross-process clipboard writes on Windows |
 | **Paste Simulation** | `windows-sys` Win32 `SendInput` | Simulates `Ctrl+V` using native VK codes — the only method apps reliably recognize |
+| **Drag & Drop** | `@hello-pangea/dnd` | Accessible, smooth snippet reordering with keyboard and pointer support |
 | **Persistence** | `tauri-plugin-store` | JSON-based storage in `AppData` for snippets and settings |
 | **Global Shortcuts** | `tauri-plugin-global-shortcut` | System-wide hotkey registration managed from Rust |
 | **Autostart** | `tauri-plugin-autostart` | Windows Registry launch-on-startup integration |
+| **External Links** | `tauri-plugin-opener` | Opens URLs (e.g. release page) in the system default browser |
 
 > **Why Win32 `SendInput` instead of a library?**  
 > Most clipboard libraries (including `enigo`) use `KEYEVENTF_UNICODE` to send characters — which apps treat as raw text input, **not** a paste command. `SendInput` with `VK_CONTROL + VK_V` is the only approach that triggers the actual paste shortcut in every app.
@@ -100,6 +108,10 @@ npm run tauri build
 
 Outputs a standalone `.exe` installer to `src-tauri/target/release/bundle/`.
 
+> **🛡️ Windows SmartScreen Warning**  
+> Because snap-paste is open-source and not code-signed with a paid certificate, Windows SmartScreen may show a blue warning dialog on first install.  
+> This is expected. Click **More info** → **Run anyway** to proceed. The source code is fully auditable on GitHub.
+
 ---
 
 ## 🎮 How to Use
@@ -114,9 +126,10 @@ Outputs a standalone `.exe` installer to `src-tauri/target/release/bundle/`.
 
 Open Settings from the gear icon (`⚙`) in the header:
 
-- **Accent Color** — Switch the entire UI accent between Lavender, Teal, Coral, or Slate.
-- **Global Hotkey** — Pick from 5 predefined system-wide shortcuts.
-- **Launch on Startup** — Toggle automatic start with Windows.
+- **Color Mode** — toggle between Dark and Light theme.
+- **Accent Color** — switch the UI accent between Lavender, Teal, Coral, or Slate.
+- **Global Hotkey** — pick from 5 predefined system-wide shortcuts.
+- **Launch on Startup** — toggle automatic start with Windows.
 
 ---
 
@@ -136,16 +149,18 @@ If captured after a JS↔Rust IPC round-trip, Windows has already activated the 
 snap-paste/
 ├── src/                        # React frontend
 │   ├── components/
-│   │   ├── SnippetItem/        # Row with kebab edit/delete menu
-│   │   ├── SnippetList/        # Scrollable snippet list
+│   │   ├── SnippetItem/        # Row with drag handle and kebab edit/delete menu
+│   │   ├── SnippetList/        # Drag-and-drop scrollable snippet list
 │   │   ├── SnippetModal/       # Add/edit modal
-│   │   └── SettingsView/       # Settings panel (theme, hotkey, startup)
+│   │   ├── SettingsView/       # Settings panel (theme, mode, hotkey, startup)
+│   │   └── UpdateBanner/       # Update available chip (GitHub releases check)
 │   ├── hooks/
-│   │   ├── useSnippets.ts      # CRUD + store persistence
-│   │   └── useSettings.ts      # Theme, hotkey, autostart management
+│   │   ├── useSnippets.ts      # CRUD + store persistence + reorder
+│   │   ├── useSettings.ts      # Theme, mode, hotkey, autostart management
+│   │   └── useUpdateChecker.ts # GitHub releases API polling
 │   ├── types/
 │   │   ├── snippet.ts
-│   │   └── settings.ts         # Theme defs, hotkey options, defaults
+│   │   └── settings.ts         # Theme defs, hotkey options, ColorMode, defaults
 │   └── utils/
 │       └── paste.ts            # Calls hide_and_paste Tauri command
 └── src-tauri/                  # Rust backend
@@ -159,7 +174,7 @@ snap-paste/
 
 ---
 
-Built with 💜 by **Racheli Shayzada**
+Built with ❤️ by **Racheli Shayzada**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Racheli_Shayzada-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/racheli-shayzada-1b7b72369/)
 
