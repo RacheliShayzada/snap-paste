@@ -28,7 +28,7 @@ type ModalState =
   | { mode: "edit"; item: SnippetItem };
 
 function App() {
-  const { snippets, addSnippet, editSnippet, deleteSnippet } = useSnippets();
+  const { snippets, addSnippet, editSnippet, deleteSnippet, reorderSnippets } = useSnippets();
   const { settings, setAccentColor, setHotkey, setLaunchOnStartup } = useSettings();
   const [modal, setModal] = useState<ModalState>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -121,6 +121,7 @@ function App() {
               onItemClick={handleItemClick}
               onEdit={(item) => setModal({ mode: "edit", item })}
               onDelete={deleteSnippet}
+              onReorder={searchQuery.trim() ? undefined : reorderSnippets}
             />
           )}
         </>
