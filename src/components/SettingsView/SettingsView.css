@@ -19,8 +19,8 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  background: #17171d;
-  border: 1px solid #2c2c3a;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 7px;
   color: var(--accent);
   cursor: pointer;
@@ -62,8 +62,8 @@
 
 /* ── Section card ── */
 .settings-section {
-  background: #17171d;
-  border: 1px solid #2c2c3a;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 9px;
   padding: 11px 13px;
 }
@@ -72,14 +72,14 @@
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.07em;
-  color: #9898b8;
+  color: var(--text-label);
   text-transform: uppercase;
   margin: 0 0 9px;
 }
 
 .settings-hint {
   font-size: 0.7rem;
-  color: #4e4e68;
+  color: var(--text-muted);
   margin: 5px 0 0;
   line-height: 1.4;
 }
@@ -116,10 +116,10 @@
 /* ── Hotkey select ── */
 .settings-select {
   width: 100%;
-  background: #0f0f14;
-  border: 1px solid #2c2c3a;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
   border-radius: 7px;
-  color: #e0e0f0;
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.8rem;
   padding: 6px 9px;
@@ -153,8 +153,8 @@
   height: 22px;
   flex-shrink: 0;
   border-radius: 11px;
-  background: #252535;
-  border: 1px solid #3a3a50;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   padding: 0;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -172,11 +172,52 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #a0a0b8;
+  background: var(--text-secondary);
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .toggle-switch--on .toggle-thumb {
   transform: translateX(16px);
   background: #fff;
+}
+
+/* ── Color mode radio buttons ── */
+.mode-options {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.mode-option input[type="radio"] {
+  display: none;
+}
+
+.mode-option--active {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mode-option:hover:not(.mode-option--active) {
+  border-color: var(--accent-hover-border);
+  color: var(--text-secondary);
 }
