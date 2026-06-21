@@ -182,9 +182,36 @@ Built with ❤️ by **Racheli Shayzada**
 
 </div>
 
-## From The App:
+## 📸 App Preview
 
-<img width="477" height="642" alt="Image" src="https://github.com/user-attachments/assets/236567b4-07b9-4bb2-b7c9-ba6e5e694165" />
-<img width="471" height="637" alt="Image" src="https://github.com/user-attachments/assets/ffb2c06a-7ae8-42f4-ae66-0537fa8db1fe" />
-<img width="473" height="641" alt="Image" src="https://github.com/user-attachments/assets/652b4bea-3027-4d59-98f9-c11320720855" />
-<img width="472" height="635" alt="Image" src="https://github.com/user-attachments/assets/35722522-5532-43b8-b900-3bd02038747b" />
+<details>
+<summary><b>🔍 Click to expand screenshots and features</b></summary>
+<br />
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/236567b4-07b9-4bb2-b7c9-ba6e5e694165" width="450" alt="Main Interface" />
+  <br /><em>Main Interface with Snippets List</em>
+</p>
+
+<hr />
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ffb2c06a-7ae8-42f4-ae66-0537fa8db1fe" width="450" alt="Light Mode" />
+  <br /><em>Brand New Light Mode Support</em>
+</p>
+
+<hr />
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/652b4bea-3027-4d59-98f9-c11320720855" width="450" alt="Drag & Drop" />
+  <br /><em>Drag & Drop Reordering via Grab Handles</em>
+</p>
+
+<hr />
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/35722522-5532-43b8-b900-3bd02038747b" width="450" alt="Settings View" />
+  <br /><em>Configurable Settings & Hotkeys</em>
+</p>
+
+</details>
