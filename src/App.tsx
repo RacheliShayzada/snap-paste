@@ -7,6 +7,7 @@ import { useSnippets } from "./hooks/useSnippets";
 import { useSettings } from "./hooks/useSettings";
 import { useUpdateChecker } from "./hooks/useUpdateChecker";
 import { UpdateBanner } from "./components/UpdateBanner/UpdateBanner";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import type { SnippetItem } from "./types/snippet";
 import "./App.css";
 
@@ -37,6 +38,7 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus the input whenever the search bar opens.
@@ -60,6 +62,53 @@ function App() {
           s.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : snippets;
+
+  // Stable refs — updated every render so the keyboard handler never reads
+  // stale values from its closure without needing to re-register.
+  const filteredRef = useRef(filtered);
+  filteredRef.current = filtered;
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+  const searchOpenRef = useRef(searchOpen);
+  searchOpenRef.current = searchOpen;
+
+  // Reset highlighted row whenever the search query changes.
+  useEffect(() => { setActiveIndex(-1); }, [searchQuery]);
+
+  // Global keyboard navigation:
+  //   ArrowDown / ArrowUp — cycle through the filtered list (with wrap)
+  //   Enter               — paste the currently highlighted snippet
+  //   Escape              — close search bar, or hide the window
+  useEffect(() => {
+    if (settingsOpen || modal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const items = filteredRef.current;
+      if (e.key === 'ArrowDown') {
+        if (!items.length) return;
+        e.preventDefault();
+        setActiveIndex(i => i < 0 ? 0 : (i + 1) % items.length);
+      } else if (e.key === 'ArrowUp') {
+        if (!items.length) return;
+        e.preventDefault();
+        setActiveIndex(i => i <= 0 ? items.length - 1 : i - 1);
+      } else if (e.key === 'Enter') {
+        const idx = activeIndexRef.current;
+        if (idx >= 0 && idx < items.length) {
+          e.preventDefault();
+          handleItemClick(items[idx].content);
+        }
+      } else if (e.key === 'Escape') {
+        if (searchOpenRef.current) {
+          setSearchQuery('');
+          setSearchOpen(false);
+        } else {
+          getCurrentWebviewWindow().hide().catch(() => {});
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [settingsOpen, modal]);
 
   const handleSave = async (title: string, content: string) => {
     if (modal?.mode === "add") {
@@ -114,7 +163,6 @@ function App() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search snippets…"
-                onKeyDown={(e) => e.key === "Escape" && toggleSearch()}
               />
             </div>
           )}
@@ -126,6 +174,7 @@ function App() {
           ) : (
             <SnippetList
               items={filtered}
+              activeIndex={activeIndex}
               onItemClick={handleItemClick}
               onEdit={(item) => setModal({ mode: "edit", item })}
               onDelete={deleteSnippet}

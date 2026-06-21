@@ -36,6 +36,7 @@ interface Props {
   onClick: (content: string) => void;
   onEdit: (item: SnippetItemType) => void;
   onDelete: (id: number) => void;
+  isActive?: boolean;
   // Drag-and-drop props (optional — omitted when search is active)
   innerRef?: (element: HTMLElement | null) => void;
   draggableProps?: DraggableProvidedDraggableProps;
@@ -43,7 +44,7 @@ interface Props {
   isDragging?: boolean;
 }
 
-export function SnippetItem({ item, onClick, onEdit, onDelete, innerRef, draggableProps, dragHandleProps, isDragging }: Props) {
+export function SnippetItem({ item, onClick, onEdit, onDelete, isActive, innerRef, draggableProps, dragHandleProps, isDragging }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -60,9 +61,10 @@ export function SnippetItem({ item, onClick, onEdit, onDelete, innerRef, draggab
 
   return (
     <li
-      className={`snippet-item${isDragging ? " snippet-item--dragging" : ""}`}
+      className={`snippet-item${isDragging ? " snippet-item--dragging" : ""}${isActive ? " snippet-item--active" : ""}`}
       onClick={() => { if (!isDragging) onClick(item.content); }}
       ref={innerRef}
+      data-active={isActive ? "true" : undefined}
       {...draggableProps}
     >
       {dragHandleProps && (

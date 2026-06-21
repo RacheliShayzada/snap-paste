@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import type { SnippetItem as SnippetItemType } from "../../types/snippet";
@@ -6,13 +7,23 @@ import "./SnippetList.css";
 
 interface Props {
   items: SnippetItemType[];
+  activeIndex?: number;
   onItemClick: (content: string) => void;
   onEdit: (item: SnippetItemType) => void;
   onDelete: (id: number) => void;
   onReorder?: (sourceIndex: number, destIndex: number) => void;
 }
 
-export function SnippetList({ items, onItemClick, onEdit, onDelete, onReorder }: Props) {
+export function SnippetList({ items, activeIndex = -1, onItemClick, onEdit, onDelete, onReorder }: Props) {
+  const listRef = useRef<HTMLUListElement | null>(null);
+
+  // Keep the keyboard-highlighted row visible inside the scroll container.
+  useEffect(() => {
+    if (activeIndex < 0 || !listRef.current) return;
+    const active = listRef.current.querySelector<HTMLElement>('[data-active="true"]');
+    active?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeIndex]);
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || result.destination.index === result.source.index) return;
     onReorder?.(result.source.index, result.destination.index);
@@ -24,7 +35,7 @@ export function SnippetList({ items, onItemClick, onEdit, onDelete, onReorder }:
         {(provided) => (
           <ul
             className="snippet-list"
-            ref={provided.innerRef}
+            ref={(el) => { provided.innerRef(el); listRef.current = el; }}
             {...provided.droppableProps}
           >
             {items.map((item, index) => (
@@ -40,6 +51,7 @@ export function SnippetList({ items, onItemClick, onEdit, onDelete, onReorder }:
                     onClick={onItemClick}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    isActive={index === activeIndex}
                     innerRef={provided.innerRef}
                     draggableProps={provided.draggableProps}
                     dragHandleProps={onReorder ? provided.dragHandleProps : null}
