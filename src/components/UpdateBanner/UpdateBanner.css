@@ -1,0 +1,49 @@
+/* ── Update available chip ── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  margin: 5px auto 0;
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-hover-border);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.69rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.update-banner:hover {
+  background: var(--accent-subtle-mid);
+  border-color: var(--accent);
+}
+
+.update-banner__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: update-pulse 2s ease-in-out infinite;
+}
+
+.update-banner__text {
+  line-height: 1;
+}
+
+.update-banner__arrow {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  line-height: 1;
+}
+
+@keyframes update-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}

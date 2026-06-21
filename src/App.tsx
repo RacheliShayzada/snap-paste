@@ -5,6 +5,8 @@ import { SettingsView } from "./components/SettingsView/SettingsView";
 import { handleItemClick } from "./utils/paste";
 import { useSnippets } from "./hooks/useSnippets";
 import { useSettings } from "./hooks/useSettings";
+import { useUpdateChecker } from "./hooks/useUpdateChecker";
+import { UpdateBanner } from "./components/UpdateBanner/UpdateBanner";
 import type { SnippetItem } from "./types/snippet";
 import "./App.css";
 
@@ -30,6 +32,7 @@ type ModalState =
 function App() {
   const { snippets, addSnippet, editSnippet, deleteSnippet, reorderSnippets } = useSnippets();
   const { settings, setAccentColor, setHotkey, setLaunchOnStartup, setColorMode } = useSettings();
+  const updateInfo = useUpdateChecker();
   const [modal, setModal] = useState<ModalState>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,6 +102,8 @@ function App() {
               <SettingsIcon />
             </button>
           </header>
+
+          {updateInfo && <UpdateBanner update={updateInfo} />}
 
           {searchOpen && (
             <div className="search-row">
