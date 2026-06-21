@@ -29,7 +29,7 @@ type ModalState =
 
 function App() {
   const { snippets, addSnippet, editSnippet, deleteSnippet, reorderSnippets } = useSnippets();
-  const { settings, setAccentColor, setHotkey, setLaunchOnStartup } = useSettings();
+  const { settings, setAccentColor, setHotkey, setLaunchOnStartup, setColorMode } = useSettings();
   const [modal, setModal] = useState<ModalState>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,6 +74,7 @@ function App() {
           onColorChange={setAccentColor}
           onHotkeyChange={setHotkey}
           onStartupChange={setLaunchOnStartup}
+          onModeChange={setColorMode}
           onBack={() => setSettingsOpen(false)}
         />
       ) : (

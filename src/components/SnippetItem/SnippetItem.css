@@ -4,8 +4,8 @@
   align-items: flex-start;
   padding: 9px 8px 9px 6px;
   border-radius: 7px;
-  background: #17171d;
-  border: 1px solid #2c2c3a;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
   gap: 4px;
@@ -36,12 +36,12 @@
 .snippet-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #f0f0f5;
+  color: var(--text-title);
 }
 
 .snippet-preview {
   font-size: 0.72rem;
-  color: #5e5e7a;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -63,7 +63,7 @@
   justify-content: center;
   border: none;
   background: transparent;
-  color: #3e3e52;
+  color: var(--text-dim);
   font-size: 1rem;
   cursor: pointer;
   border-radius: 4px;
@@ -73,7 +73,7 @@
 }
 
 .snippet-item:hover .snippet-menu-btn {
-  color: #6b6b85;
+  color: var(--text-mid);
 }
 
 .snippet-menu-btn:hover {
@@ -85,12 +85,12 @@
   position: absolute;
   right: 0;
   bottom: calc(100% + 4px);
-  background: #1e1e2a;
-  border: 1px solid #2e2e42;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 4px;
   min-width: 110px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px var(--shadow-box);
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -110,7 +110,7 @@
   padding: 6px 10px;
   border: none;
   background: transparent;
-  color: #b0b0c8;
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 500;
@@ -123,7 +123,7 @@
 
 .snippet-dropdown-item:hover {
   background: var(--accent-subtle-mid);
-  color: #e8e8f2;
+  color: var(--text-primary);
 }
 
 .snippet-dropdown-delete:hover {
@@ -142,18 +142,18 @@
   width: 18px;
   margin-right: 6px;
   border-radius: 4px;
-  color: #2a2a3c;
+  color: var(--text-dim);
   cursor: grab;
   transition: color 0.15s;
   padding: 0 1px;
 }
 
 .snippet-item:hover .snippet-drag-handle {
-  color: #4a4a62;
+  color: var(--text-mid);
 }
 
 .snippet-drag-handle:hover {
-  color: #7070a0 !important;
+  color: var(--text-mid) !important;
 }
 
 /* Applied by @hello-pangea/dnd while dragging */

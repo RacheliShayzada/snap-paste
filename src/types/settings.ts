@@ -78,14 +78,18 @@ export const HOTKEY_OPTIONS: HotkeyOption[] = [
   { id: 'alt+v',            label: 'Alt+V',             shortcut: 'Alt+V'            },
 ];
 
+export type ColorMode = 'dark' | 'light';
+
 export interface AppSettings {
   accentColor: ThemeId;
   hotkey: string;
   launchOnStartup: boolean;
+  colorMode: ColorMode;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   accentColor: 'lavender',
   hotkey: 'Ctrl+Shift+Space',
   launchOnStartup: false,
+  colorMode: 'dark',
 };

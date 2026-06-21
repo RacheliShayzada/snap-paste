@@ -1,5 +1,5 @@
 import { THEMES, HOTKEY_OPTIONS } from '../../types/settings';
-import type { AppSettings, ThemeId } from '../../types/settings';
+import type { AppSettings, ThemeId, ColorMode } from '../../types/settings';
 import './SettingsView.css';
 
 interface Props {
@@ -7,10 +7,11 @@ interface Props {
   onColorChange: (c: ThemeId) => void;
   onHotkeyChange: (h: string) => void;
   onStartupChange: (enabled: boolean) => void;
+  onModeChange: (mode: ColorMode) => void;
   onBack: () => void;
 }
 
-export function SettingsView({ settings, onColorChange, onHotkeyChange, onStartupChange, onBack }: Props) {
+export function SettingsView({ settings, onColorChange, onHotkeyChange, onStartupChange, onModeChange, onBack }: Props) {
   return (
     <div className="settings-view">
       <header className="settings-header">
@@ -23,6 +24,28 @@ export function SettingsView({ settings, onColorChange, onHotkeyChange, onStartu
       </header>
 
       <div className="settings-body">
+        {/* ── Color Mode ── */}
+        <section className="settings-section">
+          <p className="settings-section-label">Color Mode</p>
+          <div className="mode-options">
+            {(['dark', 'light'] as const).map((mode) => (
+              <label
+                key={mode}
+                className={`mode-option${settings.colorMode === mode ? ' mode-option--active' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="colorMode"
+                  value={mode}
+                  checked={settings.colorMode === mode}
+                  onChange={() => onModeChange(mode)}
+                />
+                {mode === 'dark' ? '🌙 Dark' : '☀️ Light'}
+              </label>
+            ))}
+          </div>
+        </section>
+
         {/* ── Accent Color ── */}
         <section className="settings-section">
           <p className="settings-section-label">Accent Color</p>
