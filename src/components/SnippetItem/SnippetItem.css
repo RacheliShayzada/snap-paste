@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 9px 8px 9px 12px;
+  padding: 9px 8px 9px 6px;
   border-radius: 7px;
   background: #17171d;
   border: 1px solid #2c2c3a;
@@ -123,4 +123,44 @@
 .snippet-dropdown-delete:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #f87171;
+}
+
+/* ── Drag handle ─────────────────────────────────────────── */
+
+.snippet-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  width: 18px;
+  margin-right: 6px;
+  border-radius: 4px;
+  color: #2a2a3c;
+  cursor: grab;
+  transition: color 0.15s;
+  padding: 0 1px;
+}
+
+.snippet-item:hover .snippet-drag-handle {
+  color: #4a4a62;
+}
+
+.snippet-drag-handle:hover {
+  color: #7070a0 !important;
+}
+
+/* Applied by @hello-pangea/dnd while dragging */
+.snippet-item--dragging {
+  background: var(--accent-active-bg) !important;
+  border-color: var(--accent-hover-border) !important;
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 10px 28px rgba(0, 0, 0, 0.55) !important;
+  cursor: grabbing !important;
+}
+
+.snippet-item--dragging .snippet-drag-handle {
+  cursor: grabbing;
+  color: var(--accent);
 }

@@ -66,5 +66,16 @@ export function useSnippets() {
     }
   };
 
-  return { snippets, addSnippet, editSnippet, deleteSnippet };
+  const reorderSnippets = async (sourceIndex: number, destIndex: number): Promise<void> => {
+    const updated = [...snippets];
+    const [moved] = updated.splice(sourceIndex, 1);
+    updated.splice(destIndex, 0, moved);
+    setSnippets(updated);
+    if (store) {
+      await store.set(STORE_KEY, updated);
+      await store.save();
+    }
+  };
+
+  return { snippets, addSnippet, editSnippet, deleteSnippet, reorderSnippets };
 }

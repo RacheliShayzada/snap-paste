@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef } from "react";
+import type { DraggableProvidedDragHandleProps, DraggableProvidedDraggableProps } from "@hello-pangea/dnd";
 import type { SnippetItem as SnippetItemType } from "../../types/snippet";
 import "./SnippetItem.css";
+
+const GripIcon = () => (
+  <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+    <circle cx="3" cy="3.5" r="1.4"/>
+    <circle cx="7" cy="3.5" r="1.4"/>
+    <circle cx="3" cy="8"   r="1.4"/>
+    <circle cx="7" cy="8"   r="1.4"/>
+    <circle cx="3" cy="12.5" r="1.4"/>
+    <circle cx="7" cy="12.5" r="1.4"/>
+  </svg>
+);
 
 const EditIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -24,9 +36,14 @@ interface Props {
   onClick: (content: string) => void;
   onEdit: (item: SnippetItemType) => void;
   onDelete: (id: number) => void;
+  // Drag-and-drop props (optional — omitted when search is active)
+  innerRef?: (element: HTMLElement | null) => void;
+  draggableProps?: DraggableProvidedDraggableProps;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  isDragging?: boolean;
 }
 
-export function SnippetItem({ item, onClick, onEdit, onDelete }: Props) {
+export function SnippetItem({ item, onClick, onEdit, onDelete, innerRef, draggableProps, dragHandleProps, isDragging }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +59,21 @@ export function SnippetItem({ item, onClick, onEdit, onDelete }: Props) {
   }, [menuOpen]);
 
   return (
-    <li className="snippet-item" onClick={() => onClick(item.content)}>
+    <li
+      className={`snippet-item${isDragging ? " snippet-item--dragging" : ""}`}
+      onClick={() => { if (!isDragging) onClick(item.content); }}
+      ref={innerRef}
+      {...draggableProps}
+    >
+      {dragHandleProps && (
+        <div
+          className="snippet-drag-handle"
+          {...dragHandleProps}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripIcon />
+        </div>
+      )}
       <div className="snippet-body">
         <span className="snippet-title">{item.title}</span>
         <span className="snippet-preview">{item.content}</span>
