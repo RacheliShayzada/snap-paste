@@ -14,7 +14,7 @@
 
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-a78bfa?style=flat-square)
-![Version](https://img.shields.io/badge/Version-0.2.0-22c55e?style=flat-square)
+![Version](https://img.shields.io/badge/Version-0.3.0-22c55e?style=flat-square)
 
 </div>
 
@@ -118,9 +118,9 @@ Outputs a standalone `.exe` installer to `src-tauri/target/release/bundle/`.
 
 1. **Launch** snap-paste — it starts minimized or visible depending on your settings.
 2. **Press your global hotkey** (default: `Ctrl+Shift+Space`) from any app.
-3. The snap-paste window **instantly appears**.
-4. **Click any snippet** — the window hides and the text is **automatically pasted** at your cursor.
-5. Press **`X`** to hide back to background — or configure **Launch on Startup** in Settings so it's always running.
+3. The snap-paste window **instantly appears** with focus ready for keyboard input.
+4. **Select a snippet** — click it directly, or press `↓` / `↑` to highlight a row and `Enter` to paste. The window hides and the text is **automatically pasted** at your cursor.
+5. Press `Esc` to dismiss the window without pasting, or **`X`** to hide back to background.
 
 ### ⚙️ Settings
 
