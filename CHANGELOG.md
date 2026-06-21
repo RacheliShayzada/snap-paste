@@ -5,6 +5,17 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.3.0] - 2026-06-21
+
+### ✨ Added
+
+- **Full Keyboard Navigation** — the launcher is now completely mouse-free. Press `↑` / `↓` to cycle through the snippet list with a smooth highlight, `Enter` to auto-paste the selected snippet instantly, and `Escape` to close the search bar or hide the window. The active row is automatically scrolled into view inside the list.
+- Keyboard and mouse hover states are visually identical — the highlighted row shows the same accent-coloured left border and background used for mouse hover.
+- The global keydown handler uses stable refs to avoid stale closures without re-registering on every render; navigation is disabled automatically while Settings or a modal is open.
+- Version bumped to `0.3.0` in `package.json` and `tauri.conf.json`.
+
+---
+
 ## [0.2.0] - 2026-06-21
 
 ### ✨ Added
